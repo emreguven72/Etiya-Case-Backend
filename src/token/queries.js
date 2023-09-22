@@ -7,7 +7,7 @@ const getByUsername = `
     WHERE users.username = $1
     AND tokens.expired = false
     AND tokens.revoked = false;
-`
+`;
 
 module.exports = {
     getById,
