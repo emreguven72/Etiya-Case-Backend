@@ -1,11 +1,15 @@
 const express = require("express");
+const dotenv = require("dotenv");
+
+dotenv.config({path: "./configuration.env"});
+
 const userRoutes = require("./src/user/routes");
 const tokenRoutes = require("./src/token/routes");
 const companyRoutes = require("./src/company/routes");
 const productRoutes = require("./src/products/routes");
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 
 app.use(express.json());
 app.use('/api/v1/users', userRoutes);
