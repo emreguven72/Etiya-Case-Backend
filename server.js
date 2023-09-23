@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const cors = require("cors");
 
 dotenv.config({path: "./configuration.env"});
 
@@ -9,6 +10,14 @@ const companyRoutes = require("./src/company/routes");
 const productRoutes = require("./src/products/routes");
 
 const app = express();
+
+app.use(cors({
+    origin: '*',
+    optionsSuccessStatus: 200
+}));
+
+
+
 const port = process.env.PORT;
 
 app.use(express.json());

@@ -48,7 +48,6 @@ function generateToken(user) {
                 name: user.name,
                 username: user.username
             }, jwtSecretKey);
-            console.log("basarili");
             pool.query(tokenQueries.createToken, [token, false, false, user.id], (error, results) => {
                 if(error) throw error;
             });
@@ -61,7 +60,6 @@ function generateToken(user) {
                         name: user.name,
                         username: user.username
                     }, jwtSecretKey);
-                    console.log("basarili");
                     pool.query(tokenQueries.createToken, [token, false, false, user.id], (error, results) => {
                         if(error) throw error;
                     });

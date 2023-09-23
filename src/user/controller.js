@@ -3,6 +3,7 @@ const userQueries = require("./queries");
 const tokenQueries = require("../token/queries");
 const bcrypt = require("bcrypt");
 const tokenController = require("../token/controller");
+const jwt = require('jsonwebtoken');
 
 // const authHeader = req.headers.authorization;
 // const token = tokenController.extractTokenFromHeader(authHeader);
@@ -10,13 +11,6 @@ const tokenController = require("../token/controller");
 
 const getUserById = async(req, res) => {
     const id = parseInt(req.params.id);
-
-    tokenController.generateToken({
-        id: 1,
-        name: "Emre",
-        username: "emre1411",
-        password: "$2b$10$SsGkQFzUoXOMz3Muxu3RnOs/n3COF9FR/JLHn4PeXm6BSFkJilXre"
-    })
 
     pool.query(userQueries.getUserById, [id], (error, results) => {
         if(error) throw error;
@@ -59,20 +53,52 @@ const createUser = (req, res) => {
 }
 
 const login = (req, res) => {
-    //gelen username ile eslesen kaydi db den bul
-    //bulamazsan hata
-    //bulursan gelen sifre ile db deki sifreyi karsilastir
-    //sifreler eslesirse bu kullanici icin var olan eski tokenleri gecersiz kil ve yeni bir jwt token yarat
-    //yeni tokeni db ye kaydet.
-    //jwt tokeni frontende yolla.
+    const user = req.body;
+
+    pool.query(userQueries.getUserByUsername, [user.username], (error, results) => {
+        if(error) throw error;
+        if(results.rows[0]) {
+            bcrypt.compare(user.password,results.rows[0].password)
+                .then(result => {
+                    if(result) {
+                        tokenController.generateToken({
+                            id: results.rows[0].id,
+                            username: results.rows[0].username,
+                            password: results.rows[0].password
+                        });
+                        pool.query(tokenQueries.getByUsername, [user.username], (error, results) => {
+                            if(error) throw error;
+                            res.send(results.rows[0]);
+                        })
+                    } else {
+                        res.send(null);
+                    }
+                })
+                .catch(err => console.log(err));
+        } else {
+            res.send(null);
+        }
+    });
 }
 
 const logout = (req, res) => {
-    //headerla gelen tokeni gecersiz kil
+    const authHeader = req.headers.authorization;
+
+    const token = tokenController.extractTokenFromHeader(authHeader);
+
+    pool.query(tokenQueries.getByToken, [token], (error, results) => {
+        if(error) throw error;
+        pool.query(tokenQueries.updateToken, [results.rows[0].token, true, true, results.rows[0].user_id, results.rows[0].id], (error, results) => {
+            if(error) throw error;
+            res.send(null);
+        });  
+    });
 }
 
 module.exports = {
     getUserById,
     getUserByUsername,
-    createUser
+    createUser,
+    login,
+    logout
 };
