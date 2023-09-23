@@ -4,7 +4,6 @@ const tokenQueries = require("../token/queries");
 const bcrypt = require("bcrypt");
 const tokenController = require("../token/controller");
 
-
 // const authHeader = req.headers.authorization;
 // const token = tokenController.extractTokenFromHeader(authHeader);
 // tokenController.validateToken(token);
@@ -66,6 +65,10 @@ const login = (req, res) => {
     //sifreler eslesirse bu kullanici icin var olan eski tokenleri gecersiz kil ve yeni bir jwt token yarat
     //yeni tokeni db ye kaydet.
     //jwt tokeni frontende yolla.
+}
+
+const logout = (req, res) => {
+    //headerla gelen tokeni gecersiz kil
 }
 
 module.exports = {
