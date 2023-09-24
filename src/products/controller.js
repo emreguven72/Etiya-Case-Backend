@@ -23,6 +23,24 @@ const getById = (req, res) => {
     });
 }
 
+const getAll = (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = tokenController.extractTokenFromHeader(authHeader);
+    pool.query(tokenQueries.getByToken, [token], (error, results) => {
+        if(error) throw error;
+        if(results.rows[0]) {
+            if(results.rows[0].expired == false && results.rows[0].revoked == false) {
+                pool.query(queries.getAll, (error, results) => {
+                    if(error) throw error;
+                    res.status(200).json(results.rows);
+                });
+            }
+        } else {
+            res.send("Token is not valid");
+        }
+    });
+}
+
 const getByProductName = (req, res) => {
     const productName = req.params.productName;
 
@@ -145,6 +163,7 @@ const deleteProduct = (req, res) => {
 
 module.exports = {
     getById,
+    getAll,
     getByProductName,
     getByCompanyName,
     getByCategory,

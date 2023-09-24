@@ -12,7 +12,7 @@ const getLatestCompanies = `
 
 const getAll = `
     SELECT *
-    FROM companies;
+    FROM companies ORDER BY id ASC;
 `;
 
 const createCompany = `

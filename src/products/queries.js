@@ -1,20 +1,31 @@
-const getById = "SELECT * FROM products where id = $1";
+const getById = "SELECT products.*, companies.company_name FROM products INNER JOIN companies ON products.company_id = company.id where id = $1";
+
+const getAll = `
+    SELECT products.*, companies.company_name
+    FROM products
+    INNER JOIN companies ON products.company_id = companies.id
+    ORDER BY company_id ASC;
+`;
 
 const getByProductName = `
-    SELECT *
+    SELECT products.*, companies.company_name
     FROM products
+    INNER JOIN companies ON products.company_id = company.id
     WHERE product_name = $1;
 `;
 
 const getByCompanyName = `
-    SELECT products.*
+    SELECT products.*, companies.company_name
     FROM products
-    INNER JOIN companies ON products.company = companies.id
+    INNER JOIN companies ON products.company_id = companies.id
     WHERE companies.company_name = $1;
 `;
 
 const getByCategory = `
-    SELECT * FROM products WHERE product_category = $1
+    SELECT products.*, companies.company_name 
+    FROM products
+    INNER JOIN companies ON products.company_id = company.id
+    WHERE product_category = $1
 `
 
 const createProduct = `
@@ -31,6 +42,7 @@ const deleteProduct = `
 
 module.exports = {
     getById,
+    getAll,
     getByProductName,
     getByCompanyName,
     getByCategory,

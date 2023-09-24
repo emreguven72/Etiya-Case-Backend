@@ -43,20 +43,6 @@ const getByCompanyName = (req, res) => {
     });
 }
 
-
-// const authHeader = req.headers.authorization;
-//     const token = tokenController.extractTokenFromHeader(authHeader);
-//     pool.query(tokenQueries.getByToken, [token], (error, results) => {
-//         if(error) throw error;
-//         if(results.rows[0]) {
-//             if(results.rows[0].expired == false && results.rows[0].revoked == false) {
-                
-//             }
-//         } else {
-//             res.send("Token is not valid");
-//         }
-//     });
-
 const getLatestCompanies = (req, res) => {
     const authHeader = req.headers.authorization;
     const token = tokenController.extractTokenFromHeader(authHeader);
