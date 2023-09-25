@@ -1,4 +1,9 @@
-const getById = "SELECT products.*, companies.company_name FROM products INNER JOIN companies ON products.company_id = company.id where id = $1";
+const getById = `
+    SELECT products.*, companies.company_name 
+    FROM products 
+    INNER JOIN companies ON products.company_id = companies.id
+    WHERE products.id = $1;
+`;
 
 const getAll = `
     SELECT products.*, companies.company_name
@@ -10,9 +15,9 @@ const getAll = `
 const getByProductName = `
     SELECT products.*, companies.company_name
     FROM products
-    INNER JOIN companies ON products.company_id = company.id
+    INNER JOIN companies ON products.company_id = companies.id
     WHERE product_name = $1;
-`;
+`; 
 
 const getByCompanyName = `
     SELECT products.*, companies.company_name
@@ -24,7 +29,7 @@ const getByCompanyName = `
 const getByCategory = `
     SELECT products.*, companies.company_name 
     FROM products
-    INNER JOIN companies ON products.company_id = company.id
+    INNER JOIN companies ON products.company_id = companies.id
     WHERE product_category = $1
 `
 
