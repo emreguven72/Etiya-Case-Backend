@@ -3,7 +3,7 @@ const tokenController = require("./controller");
 
 const router = Router();
 
-router.get('/:id', tokenController.getById);
-router.get('/getByUsername/:username', tokenController.getbyUsername);
+router.get('/getById/:id', tokenController._getById);
+router.get('/getByUsername/:username', tokenController._getbyUsername);
 
 module.exports = router;

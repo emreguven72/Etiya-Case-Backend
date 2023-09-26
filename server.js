@@ -1,6 +1,18 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const mongoose = require("mongoose");
+const app = express();
+
+mongoose.set("strictQuery", false);
+mongoose.set("strictPopulate", false);
+const server = '127.0.0.1:27017'; 
+const database = 'etiyaDB'; 
+mongoose
+      .connect(`mongodb://${server}/${database}`)
+      .then(() => {
+        console.log('Database connection successful');
+      })
 
 dotenv.config({path: "./configuration.env"});
 
@@ -9,14 +21,11 @@ const tokenRoutes = require("./src/token/routes");
 const companyRoutes = require("./src/company/routes");
 const productRoutes = require("./src/products/routes");
 
-const app = express();
 
 app.use(cors({
     origin: '*',
     optionsSuccessStatus: 200
 }));
-
-
 
 const port = process.env.PORT;
 

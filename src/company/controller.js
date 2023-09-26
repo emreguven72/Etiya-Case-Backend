@@ -3,6 +3,9 @@ const queries = require("./queries");
 const tokenController = require("../token/controller");
 const tokenQueries = require("../token/queries");
 const productQueries = require("../products/queries");
+const Company = require('../models/CompanyModel');
+const Product = require('../models/ProductModel');
+const Token = require('../models/TokenModel');
 
 const getById = (req, res) => {
     const id = parseInt(req.params.id);
@@ -147,6 +150,115 @@ const deleteCompany = (req, res) => {
     });
 }
 
+const _getById = async(req, res) => {
+    const id = req.params.id;
+
+    const authHeader = req.headers.authorization;
+    const token = tokenController.extractTokenFromHeader(authHeader);
+    const tokenObject = await Token.findOne({ token: token });
+
+    if(tokenObject.expired === false && tokenObject.revoked === false) {
+        const company = await Company.findById(id);
+        res.status(200).json(company);
+    } else {
+        res.send("Token is not valid2");
+    }
+}
+
+const _getByCompanyName = async(req, res) => {
+    const companyName = req.params.companyName;
+
+    const authHeader = req.headers.authorization;
+    const token = tokenController.extractTokenFromHeader(authHeader);
+    const tokenObject = await Token.findOne({ token: token });
+
+    if(tokenObject.expired === false && tokenObject.revoked === false) {
+        const company = await Company.findOne({ company_name: companyName });
+        res.status(200).json(company);
+    } else {
+        res.send("Token is not valid2");
+    }
+}
+
+const _getLatestCompanies = async(req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = tokenController.extractTokenFromHeader(authHeader);
+    const tokenObject = await Token.findOne({ token: token });
+
+    if(tokenObject.expired === false && tokenObject.revoked === false) {
+        const companies = await Company.find({}).sort({ _id: -1 }).limit(3);
+        res.status(200).json(companies);
+    } else {
+        res.send("Token is not valid2");
+    }
+}
+
+const _getAll = async(req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = tokenController.extractTokenFromHeader(authHeader);
+    const tokenObject = await Token.findOne({ token: token });
+
+    if(tokenObject.expired === false && tokenObject.revoked === false) {
+        const companies = await Company.find({});
+        res.status(200).json(companies);
+    } else {
+        res.send("Token is not valid2");
+    }
+}
+
+const _createCompany = async(req, res) => {
+    var company = req.body;
+
+    const authHeader = req.headers.authorization;
+    const token = tokenController.extractTokenFromHeader(authHeader);
+    const tokenObject = await Token.findOne({ token: token });
+
+    if(tokenObject.expired === false && tokenObject.revoked === false) {
+        const createdCompany = await Company.create(company);
+        res.status(200).json(createdCompany);
+    } else {
+        res.send("Token is not valid2");
+    }
+}
+
+const _updateCompany = async(req, res) => {
+    const company = req.body;
+
+    const authHeader = req.headers.authorization;
+    const token = tokenController.extractTokenFromHeader(authHeader);
+    const tokenObject = await Token.findOne({ token: token });
+
+    if(tokenObject.expired === false && tokenObject.revoked === false) {
+        const updatedCompany = await Company.findByIdAndUpdate(company.id, company);
+        if(!updatedCompany) {
+            return res.send("Company cannot changed");
+        }
+        res.status(200).json(updatedCompany);
+    } else {
+        res.send("Token is not valid2");
+    }
+}
+
+const _deleteCompany = async(req, res) => {
+    const id = req.params.id;
+
+    const authHeader = req.headers.authorization;
+    const token = tokenController.extractTokenFromHeader(authHeader);
+    const tokenObject = await Token.findOne({ token: token });
+
+    if(tokenObject.expired === false && tokenObject.revoked === false) {
+        const companyProducts = await Product.find({ company: id });
+        if(companyProducts.length > 0) {
+            return res.send("Company has products");
+        } else {
+            const deletedCompany = await Company.findByIdAndDelete(id);
+            res.status(200).json(deletedCompany);
+        }
+    } else {
+        res.send("Token is not valid2");
+    }
+}
+
 module.exports = {
     getById,
     getByCompanyName,
@@ -154,5 +266,12 @@ module.exports = {
     getAll,
     createCompany,
     updateCompany,
-    deleteCompany
+    deleteCompany,
+    _getById,
+    _getByCompanyName,
+    _getLatestCompanies,
+    _getAll,
+    _createCompany,
+    _updateCompany,
+    _deleteCompany
 };

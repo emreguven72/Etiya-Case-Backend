@@ -4,10 +4,8 @@ const tokenQueries = require("../token/queries");
 const bcrypt = require("bcrypt");
 const tokenController = require("../token/controller");
 const jwt = require('jsonwebtoken');
-
-// const authHeader = req.headers.authorization;
-// const token = tokenController.extractTokenFromHeader(authHeader);
-// tokenController.validateToken(token);
+const User = require('../models/UserModel.js');
+const Token = require('../models/TokenModel.js');
 
 const getUserById = async(req, res) => {
     const id = parseInt(req.params.id);
@@ -48,8 +46,6 @@ const createUser = (req, res) => {
             })
         })
         .catch(err => console.log(err));
-
-
 }
 
 const login = (req, res) => {
@@ -95,10 +91,82 @@ const logout = (req, res) => {
     });
 }
 
+const _getUserById = async(req, res) => {
+    const id = req.params.id;
+    const user = await User.findById(id);
+    res.status(200).json(user);
+}
+
+const _getUserByUsername = async(req, res) => {
+    const username = req.params.username;
+    const user = await User.findOne({ username: username });
+    res.status(200).json(user);
+};
+
+const _createUser = async(req, res) => {
+    try {
+        var userObject = req.body;
+        const saltRounds = 10;
+        const jwtSecretKey = process.env.JWT_SECRET_KEY;
+
+        bcrypt
+        .genSalt(saltRounds)
+        .then(salt => {
+            return bcrypt.hash(userObject.password, salt)
+        })
+        .then(async(hash) => {
+            userObject.password = hash;
+            const createdUser = await User.create(userObject);
+            res.status(200).json(createdUser);
+        })
+        .catch(err => console.log(err));
+    } catch (error) {
+        res.status(500).json(error);
+    }
+};
+
+const _login = async(req, res) => {
+    const body = req.body;
+
+    const user = await User.findOne({ username: body.username });
+    if(user) {
+        bcrypt.compare(body.password,user.password)
+                .then(async(result) => {
+                    if(result) {
+                        const createdToken = await tokenController._generateToken(user);
+                        res.send(createdToken.token);
+                    } else {
+                        res.send(null);
+                    }
+                })
+                .catch(err => console.log(err));
+    } else {
+        res.send(null);
+    }
+}
+
+const _logout = async(req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = tokenController.extractTokenFromHeader(authHeader);
+    const tokenObject = await Token.findOne({ token: token });
+    if(tokenObject.expired === false && tokenObject.revoked === false) {
+        await Token.findByIdAndUpdate(tokenObject.id, {
+            expired: true,
+            revoked: true
+        });
+    }
+    res.send(null);
+}
+
 module.exports = {
     getUserById,
     getUserByUsername,
     createUser,
     login,
-    logout
+    logout,
+    _createUser,
+    _getUserById,
+    _getUserByUsername,
+    _login,
+    _logout
 };
