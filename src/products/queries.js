@@ -26,6 +26,13 @@ const getByCompanyName = `
     WHERE companies.company_name = $1;
 `;
 
+const getByCompanyId = `
+    SELECT products.*, companies.company_name
+    FROM products
+    INNER JOIN companies ON products.company_id = companies.id
+    WHERE companies.id = $1;
+`;
+
 const getByCategory = `
     SELECT products.*, companies.company_name 
     FROM products
@@ -50,6 +57,7 @@ module.exports = {
     getAll,
     getByProductName,
     getByCompanyName,
+    getByCompanyId,
     getByCategory,
     createProduct,
     updateProduct,

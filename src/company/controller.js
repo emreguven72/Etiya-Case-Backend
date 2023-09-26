@@ -2,6 +2,7 @@ const pool = require("../../db");
 const queries = require("./queries");
 const tokenController = require("../token/controller");
 const tokenQueries = require("../token/queries");
+const productQueries = require("../products/queries");
 
 const getById = (req, res) => {
     const id = parseInt(req.params.id);
@@ -128,10 +129,17 @@ const deleteCompany = (req, res) => {
         if(error) throw error;
         if(results.rows[0]) {
             if(results.rows[0].expired == false && results.rows[0].revoked == false) {
-                pool.query(queries.deleteCompany, [id], (error, results) => {
+                pool.query(productQueries.getByCompanyId, [id], (error, results) => {
                     if(error) throw error;
-                    res.status(200).json(results.rows);
-                })
+                    if(results.rows.length === 0) {
+                        pool.query(queries.deleteCompany, [id], (error, results) => {
+                            if(error) throw error;
+                            res.status(200).json(results.rows);
+                        })
+                    } else {
+                        res.send("Company has products");
+                    }
+                });
             }
         } else {
             res.send("Token is not valid");
