@@ -3,6 +3,10 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const app = express();
+const userRoutes = require("./src/user/routes");
+const tokenRoutes = require("./src/token/routes");
+const companyRoutes = require("./src/company/routes");
+const productRoutes = require("./src/products/routes");
 
 mongoose.set("strictQuery", false);
 mongoose.set("strictPopulate", false);
@@ -15,12 +19,6 @@ mongoose
       })
 
 dotenv.config({path: "./configuration.env"});
-
-const userRoutes = require("./src/user/routes");
-const tokenRoutes = require("./src/token/routes");
-const companyRoutes = require("./src/company/routes");
-const productRoutes = require("./src/products/routes");
-
 
 app.use(cors({
     origin: '*',

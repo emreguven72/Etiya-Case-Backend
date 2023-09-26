@@ -1,11 +1,13 @@
-const Pool = require('pg').Pool;
+//Postgre Kullanmak için gereken Veritabanına bağlanma kodları
 
-const pool = new Pool({
-    user: "postgres",
-    host: "localhost",
-    database: "EtiyaDB",
-    password: "1411",
-    port: 5432
-});
+// const Pool = require('pg').Pool;
 
-module.exports = pool;
+// const pool = new Pool({
+//     user: "postgres",
+//     host: "localhost",
+//     database: "EtiyaDB",
+//     password: "1411",
+//     port: 5432
+// });
+
+// module.exports = pool;

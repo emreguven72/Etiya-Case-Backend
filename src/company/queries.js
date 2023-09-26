@@ -1,3 +1,7 @@
+//PostgreSQL kullanmak için gereken SQL sorguları
+//Yeni versiyonda MongoDB kullandığım için bu sorgulara gerek kalmadı
+
+
 const getById = "SELECT * FROM companies where id = $1";
 
 const getByCompanyName = `

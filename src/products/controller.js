@@ -6,173 +6,12 @@ const Product = require("../models/ProductModel");
 const Company = require("../models/CompanyModel");
 const Token = require("../models/TokenModel");
 
-const getById = (req, res) => {
-    const id = parseInt(req.params.id);
-
-    const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    pool.query(tokenQueries.getByToken, [token], (error, results) => {
-        if(error) throw error;
-        if(results.rows[0]) {
-            if(results.rows[0].expired == false && results.rows[0].revoked == false) {
-                pool.query(queries.getById, [id], (error, results) => {
-                    if(error) throw error;
-                    res.status(200).json(results.rows);
-                });
-            }
-        } else {
-            res.send("Token is not valid");
-        }
-    });
-}
-
-const getAll = (req, res) => {
-    const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    pool.query(tokenQueries.getByToken, [token], (error, results) => {
-        if(error) throw error;
-        if(results.rows[0]) {
-            if(results.rows[0].expired == false && results.rows[0].revoked == false) {
-                pool.query(queries.getAll, (error, results) => {
-                    if(error) throw error;
-                    res.status(200).json(results.rows);
-                });
-            }
-        } else {
-            res.send("Token is not valid");
-        }
-    });
-}
-
-const getByProductName = (req, res) => {
-    const productName = req.params.productName;
-
-    const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    pool.query(tokenQueries.getByToken, [token], (error, results) => {
-        if(error) throw error;
-        if(results.rows[0]) {
-            if(results.rows[0].expired == false && results.rows[0].revoked == false) {
-                pool.query(queries.getByProductName, [productName], (error, results) => {
-                    if(error) throw error;
-                    res.status(200).json(results.rows);
-                });
-            }
-        } else {
-            res.send("Token is not valid");
-        }
-    });
-}
-
-const getByCompanyName = (req, res) => {
-    const companyName = req.params.companyName;
-
-    const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    pool.query(tokenQueries.getByToken, [token], (error, results) => {
-        if(error) throw error;
-        if(results.rows[0]) {
-            if(results.rows[0].expired == false && results.rows[0].revoked == false) {
-                pool.query(queries.getByCompanyName, [companyName], (error, results) => {
-                    if(error) throw error;
-                    res.status(200).json(results.rows);
-                });
-            }
-        } else {
-            res.send("Token is not valid");
-        }
-    });
-}
-
-const getByCategory = (req, res) => {
-    const category = req.params.category;
-
-    const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    pool.query(tokenQueries.getByToken, [token], (error, results) => {
-        if(error) throw error;
-        if(results.rows[0]) {
-            if(results.rows[0].expired == false && results.rows[0].revoked == false) {
-                pool.query(queries.getByCategory, [category], (error, results) => {
-                    if(error) throw error;
-                    res.status(200).json(results.rows);
-                })
-            }
-        } else {
-            res.send("Token is not valid");
-        }
-    });
-}
-
-const createProduct = (req, res) => {
-    const product = req.body;
-
-    const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    pool.query(tokenQueries.getByToken, [token], (error, results) => {
-        if(error) throw error;
-        if(results.rows[0]) {
-            if(results.rows[0].expired == false && results.rows[0].revoked == false) {
-                pool.query(queries.createProduct, [product.product_name,product.product_amount,product.amount_unit,product.company_id,product.product_category], (error, results) => {
-                    if(error) throw error;
-                    res.status(201).json(results.rows);
-                });
-            }
-        } else {
-            res.send("Token is not valid");
-        }
-    });
-}
-
-const updateProduct = (req, res) => {
-    const product = req.body;
-
-    const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    pool.query(tokenQueries.getByToken, [token], (error, results) => {
-        if(error) throw error;
-        if(results.rows[0]) {
-            if(results.rows[0].expired == false && results.rows[0].revoked == false) {
-                pool.query(queries.updateProduct, [product.product_name,product.product_amount,product.amount_unit,product.company_id,product.product_category,product.id], (error, results) => {
-                    if(error) throw error;
-                    res.status(200).json(results.rows);
-                });   
-            }
-        } else {
-            res.send("Token is not valid");
-        }
-    });
-}
-
-const deleteProduct = (req, res) => {
-    const id = parseInt(req.params.id);
-
-    const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    pool.query(tokenQueries.getByToken, [token], (error, results) => {
-        if(error) throw error;
-        if(results.rows[0]) {
-            if(results.rows[0].expired == false && results.rows[0].revoked == false) {
-                pool.query(queries.deleteProduct, [id], (error, results) => {
-                    if(error) throw error;
-                    res.status(200).json(results.rows);
-                })
-            }
-        } else {
-            res.send("Token is not valid");
-        }
-    });
-}
-
 const _getById = async(req, res) => {
     const id = req.params.id;
 
     const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-
-    const tokenObject = await Token.findOne({ token: token });
-
-    if(tokenObject.expired === false && tokenObject.revoked === false) {
+    const isTokenValid = await tokenController._isTokenValid(authHeader);
+    if(isTokenValid) {
         const product = await Product.findById(id).populate('company');
         res.status(200).json(product);
     } else {
@@ -182,11 +21,8 @@ const _getById = async(req, res) => {
 
 const _getAll = async(req, res) => {
     const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-
-    const tokenObject = await Token.findOne({ token: token });
-
-    if(tokenObject.expired === false && tokenObject.revoked === false) {
+    const isTokenValid = await tokenController._isTokenValid(authHeader);
+    if(isTokenValid) {
         const products = await Product.find({}).populate('company');
         res.status(200).json(products);
     } else {
@@ -197,10 +33,8 @@ const _getAll = async(req, res) => {
 const _getByProductName = async(req, res) => {
     const productName = req.params.productName;
     const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    const tokenObject = await Token.findOne({ token: token });
-
-    if(tokenObject.expired === false && tokenObject.revoked === false) {
+    const isTokenValid = await tokenController._isTokenValid(authHeader);
+    if(isTokenValid) {
         const products = await Product.find({ product_name: productName }).populate('company');
         res.status(200).json(products);
     } else {
@@ -211,11 +45,8 @@ const _getByProductName = async(req, res) => {
 const _getByCompanyName = async(req, res) => {
     const companyName = req.params.companyName;
     const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-
-    const tokenObject = await Token.findOne({ token: token });
-
-    if(tokenObject.expired === false && tokenObject.revoked === false) {
+    const isTokenValid = await tokenController._isTokenValid(authHeader);
+    if(isTokenValid) {
         const company = await Company.findOne({ company_name: companyName });
         if(company) {
             const products = await Product.find({ company: company._id }).populate('company');
@@ -231,10 +62,8 @@ const _getByCompanyName = async(req, res) => {
 const _getByCategory = async(req, res) => {
     const category = req.params.category;
     const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    const tokenObject = await Token.findOne({ token: token });
-
-    if(tokenObject.expired === false && tokenObject.revoked === false) {
+    const isTokenValid = await tokenController._isTokenValid(authHeader);
+    if(isTokenValid) {
         const products = await Product.find({ product_category: category }).populate('company');
         res.status(200).json(products);
     } else {
@@ -245,14 +74,16 @@ const _getByCategory = async(req, res) => {
 const _createProduct = async(req, res) => {
     const product = req.body;
     const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    const tokenObject = await Token.findOne({ token: token });
-
-    if(tokenObject.expired === false && tokenObject.revoked === false) {
+    const isTokenValid = await tokenController._isTokenValid(authHeader);
+    if(isTokenValid) {
         const company = await Company.findOne({ company_name: product.company_name });
-        product.company = company;
-        const createdProduct = await Product.create(product);
-        res.status(200).json(createdProduct);
+        if(company) {
+            product.company = company;
+            const createdProduct = await Product.create(product);
+            res.status(200).json(createdProduct);
+        } else {
+            res.send("Company cannot found");
+        }
     } else {
         res.send("Token is not valid2");
     }
@@ -262,16 +93,19 @@ const _updateProduct = async(req, res) => {
     const body = req.body;
 
     const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    const tokenObject = await Token.findOne({ token: token });
-
-    if(tokenObject.expired === false && tokenObject.revoked === false) {
-        const updatedProduct = await Product.findByIdAndUpdate(body.id, body);
-        console.log(updatedProduct);
-        if(!updatedProduct) {
-            return res.send("Product cannot changed");
+    const isTokenValid = await tokenController._isTokenValid(authHeader);
+    if(isTokenValid) {
+        const company = await Company.findOne({ company_name: body.company_name });
+        if(company) {
+            body.company = company;
+            const updatedProduct = await Product.findByIdAndUpdate(body.id, body);
+            if(!updatedProduct) {
+                return res.send("Product cannot changed");
+            }
+            res.status(200).json(updatedProduct);
+        } else {
+            res.send("Company cannot found");
         }
-        res.status(200).json(updatedProduct);
     } else {
         res.send("Token is not valid2");
     }
@@ -281,10 +115,8 @@ const _deleteProduct = async(req, res) => {
     const id = req.params.id;
 
     const authHeader = req.headers.authorization;
-    const token = tokenController.extractTokenFromHeader(authHeader);
-    const tokenObject = await Token.findOne({ token: token });
-
-    if(tokenObject.expired === false && tokenObject.revoked === false) {
+    const isTokenValid = await tokenController._isTokenValid(authHeader);
+    if(isTokenValid) {
         const deletedProduct = await Product.findByIdAndDelete(id);
         res.status(200).json(deletedProduct);
     } else {
@@ -293,14 +125,6 @@ const _deleteProduct = async(req, res) => {
 }
 
 module.exports = {
-    getById,
-    getAll,
-    getByProductName,
-    getByCompanyName,
-    getByCategory,
-    createProduct,
-    updateProduct,
-    deleteProduct,
     _getById,
     _getAll,
     _getByProductName,
@@ -310,3 +134,164 @@ module.exports = {
     _updateProduct,
     _deleteProduct
 };
+
+//PostgreSQL kullanmak için gereken fonksiyonlar
+//Yeni versiyonda MongoDB kullandığım için bu fonksiyonlara gerek kalmadı
+
+// const getById = (req, res) => {
+//     const id = parseInt(req.params.id);
+
+//     const authHeader = req.headers.authorization;
+//     const token = tokenController.extractTokenFromHeader(authHeader);
+//     pool.query(tokenQueries.getByToken, [token], (error, results) => {
+//         if(error) throw error;
+//         if(results.rows[0]) {
+//             if(results.rows[0].expired == false && results.rows[0].revoked == false) {
+//                 pool.query(queries.getById, [id], (error, results) => {
+//                     if(error) throw error;
+//                     res.status(200).json(results.rows);
+//                 });
+//             }
+//         } else {
+//             res.send("Token is not valid");
+//         }
+//     });
+// }
+
+// const getAll = (req, res) => {
+//     const authHeader = req.headers.authorization;
+//     const token = tokenController.extractTokenFromHeader(authHeader);
+//     pool.query(tokenQueries.getByToken, [token], (error, results) => {
+//         if(error) throw error;
+//         if(results.rows[0]) {
+//             if(results.rows[0].expired == false && results.rows[0].revoked == false) {
+//                 pool.query(queries.getAll, (error, results) => {
+//                     if(error) throw error;
+//                     res.status(200).json(results.rows);
+//                 });
+//             }
+//         } else {
+//             res.send("Token is not valid");
+//         }
+//     });
+// }
+
+// const getByProductName = (req, res) => {
+//     const productName = req.params.productName;
+
+//     const authHeader = req.headers.authorization;
+//     const token = tokenController.extractTokenFromHeader(authHeader);
+//     pool.query(tokenQueries.getByToken, [token], (error, results) => {
+//         if(error) throw error;
+//         if(results.rows[0]) {
+//             if(results.rows[0].expired == false && results.rows[0].revoked == false) {
+//                 pool.query(queries.getByProductName, [productName], (error, results) => {
+//                     if(error) throw error;
+//                     res.status(200).json(results.rows);
+//                 });
+//             }
+//         } else {
+//             res.send("Token is not valid");
+//         }
+//     });
+// }
+
+// const getByCompanyName = (req, res) => {
+//     const companyName = req.params.companyName;
+
+//     const authHeader = req.headers.authorization;
+//     const token = tokenController.extractTokenFromHeader(authHeader);
+//     pool.query(tokenQueries.getByToken, [token], (error, results) => {
+//         if(error) throw error;
+//         if(results.rows[0]) {
+//             if(results.rows[0].expired == false && results.rows[0].revoked == false) {
+//                 pool.query(queries.getByCompanyName, [companyName], (error, results) => {
+//                     if(error) throw error;
+//                     res.status(200).json(results.rows);
+//                 });
+//             }
+//         } else {
+//             res.send("Token is not valid");
+//         }
+//     });
+// }
+
+// const getByCategory = (req, res) => {
+//     const category = req.params.category;
+
+//     const authHeader = req.headers.authorization;
+//     const token = tokenController.extractTokenFromHeader(authHeader);
+//     pool.query(tokenQueries.getByToken, [token], (error, results) => {
+//         if(error) throw error;
+//         if(results.rows[0]) {
+//             if(results.rows[0].expired == false && results.rows[0].revoked == false) {
+//                 pool.query(queries.getByCategory, [category], (error, results) => {
+//                     if(error) throw error;
+//                     res.status(200).json(results.rows);
+//                 })
+//             }
+//         } else {
+//             res.send("Token is not valid");
+//         }
+//     });
+// }
+
+// const createProduct = (req, res) => {
+//     const product = req.body;
+
+//     const authHeader = req.headers.authorization;
+//     const token = tokenController.extractTokenFromHeader(authHeader);
+//     pool.query(tokenQueries.getByToken, [token], (error, results) => {
+//         if(error) throw error;
+//         if(results.rows[0]) {
+//             if(results.rows[0].expired == false && results.rows[0].revoked == false) {
+//                 pool.query(queries.createProduct, [product.product_name,product.product_amount,product.amount_unit,product.company_id,product.product_category], (error, results) => {
+//                     if(error) throw error;
+//                     res.status(201).json(results.rows);
+//                 });
+//             }
+//         } else {
+//             res.send("Token is not valid");
+//         }
+//     });
+// }
+
+// const updateProduct = (req, res) => {
+//     const product = req.body;
+
+//     const authHeader = req.headers.authorization;
+//     const token = tokenController.extractTokenFromHeader(authHeader);
+//     pool.query(tokenQueries.getByToken, [token], (error, results) => {
+//         if(error) throw error;
+//         if(results.rows[0]) {
+//             if(results.rows[0].expired == false && results.rows[0].revoked == false) {
+//                 pool.query(queries.updateProduct, [product.product_name,product.product_amount,product.amount_unit,product.company_id,product.product_category,product.id], (error, results) => {
+//                     if(error) throw error;
+//                     res.status(200).json(results.rows);
+//                 });   
+//             }
+//         } else {
+//             res.send("Token is not valid");
+//         }
+//     });
+// }
+
+// const deleteProduct = (req, res) => {
+//     const id = parseInt(req.params.id);
+
+//     const authHeader = req.headers.authorization;
+//     const token = tokenController.extractTokenFromHeader(authHeader);
+//     pool.query(tokenQueries.getByToken, [token], (error, results) => {
+//         if(error) throw error;
+//         if(results.rows[0]) {
+//             if(results.rows[0].expired == false && results.rows[0].revoked == false) {
+//                 pool.query(queries.deleteProduct, [id], (error, results) => {
+//                     if(error) throw error;
+//                     res.status(200).json(results.rows);
+//                 })
+//             }
+//         } else {
+//             res.send("Token is not valid");
+//         }
+//     });
+// }

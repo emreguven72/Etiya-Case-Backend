@@ -4,23 +4,7 @@ const jwt = require('jsonwebtoken');
 const Token = require('../models/TokenModel.js');
 const User = require('../models/UserModel')
 
-const getById = (req, res) => {
-    const id = parseInt(req.params.id);
 
-    pool.query(tokenQueries.getById, [id], (error, results) => {
-        if(error) throw error;
-        res.status(200).json(results.rows);
-    });
-}
-
-const getbyUsername = (req, res) => {
-    const username = req.params.username;
-
-    pool.query(tokenQueries.getByUsername, [username], (error, results) => {
-        if(error) throw error;
-        res.status(200).json(results.rows);
-    });
-}
 
 function extractTokenFromHeader(authHeader) {
     let token = "";
@@ -103,12 +87,44 @@ async function _generateToken(user) {
     return createdToken;
 }
 
+async function _isTokenValid(authHeader) {
+    const token = extractTokenFromHeader(authHeader);
+    const tokenObject = await Token.findOne({ token: token });
+    if(tokenObject) {
+        if(tokenObject.expired === true && tokenObject.revoked === true) {
+            return false;
+        } 
+        return true;
+    }
+    return false;
+}
+
 module.exports = {
-    getById,
-    getbyUsername,
-    generateToken,
     extractTokenFromHeader,
+    generateToken,
     _getById,
     _getbyUsername,
-    _generateToken
+    _generateToken,
+    _isTokenValid
 };
+
+//PostgreSQL kullanmak için gereken fonksiyonlar
+//Yeni versiyonda MongoDB kullandığım için bu fonksiyonlara gerek kalmadı
+
+// const getById = (req, res) => {
+//     const id = parseInt(req.params.id);
+
+//     pool.query(tokenQueries.getById, [id], (error, results) => {
+//         if(error) throw error;
+//         res.status(200).json(results.rows);
+//     });
+// }
+
+// const getbyUsername = (req, res) => {
+//     const username = req.params.username;
+
+//     pool.query(tokenQueries.getByUsername, [username], (error, results) => {
+//         if(error) throw error;
+//         res.status(200).json(results.rows);
+//     });
+// }

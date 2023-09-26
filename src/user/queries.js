@@ -1,3 +1,7 @@
+//PostgreSQL kullanmak için gereken SQL sorguları
+//Yeni versiyonda MongoDB kullandığım için bu sorgulara gerek kalmadı
+
+
 const getUserById = "SELECT * FROM users where id = $1";
 
 const getUserByUsername = "SELECT * FROM users where username = $1";
