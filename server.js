@@ -10,10 +10,8 @@ const productRoutes = require("./src/products/routes");
 
 mongoose.set("strictQuery", false);
 mongoose.set("strictPopulate", false);
-const server = '127.0.0.1:27017'; 
-const database = 'etiyaDB'; 
 mongoose
-      .connect(`mongodb://${server}/${database}`)
+      .connect("mongodb://127.0.0.1:27017/etiyaDB")
       .then(() => {
         console.log('Database connection successful');
       })
