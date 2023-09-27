@@ -16,8 +16,7 @@ services:
       - 3001:3001
     environment:
       PORT: 3001
-      MONGODB_URI: mongodb://mongo_db:27017
-      DB_NAME: etiyaDB
+      MONGODB_URI: mongodb://mongo_db:27017/etiyaDB
     depends_on:
       - mongo_db
 
